@@ -1,0 +1,925 @@
+{
+  "name": "Agent Coordinateur",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -272,
+        -48
+      ],
+      "id": "81b7bfa1-dddd-4cce-bd15-d4932448edb4",
+      "name": "Réception Telegram",
+      "webhookId": "7f995b53-fe84-4112-91ee-9444452c9c14",
+      "credentials": {
+        "telegramApi": {
+          "id": "r18YL5Gfg5zLPEeZ",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "5ab6b8c8-185c-4519-925f-4d1a0356a7fb",
+              "leftValue": "={{ $json.message.from.id }}",
+              "rightValue": "8180406529",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        -144,
+        -48
+      ],
+      "id": "48073438-cb57-45d4-b873-baaa891524a6",
+      "name": "verification utilisateur autorise"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "Désolé, tu n'es pas autorisé à utiliser cet agent.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -208,
+        112
+      ],
+      "id": "36bd69b6-a523-43e5-8802-1768bad3b9e6",
+      "name": "acces non autorisee",
+      "webhookId": "7e95e4cd-02e7-43d6-9f80-6d3e53eea40c",
+      "credentials": {
+        "telegramApi": {
+          "id": "r18YL5Gfg5zLPEeZ",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{ $('Réception Telegram').item.json.message.text || $('Réception Telegram').item.json.message.caption || 'Utilisateur a envoyé un message.' }}",
+        "options": {
+          "systemMessage": "=# IDENTITÉ ET MISSION\n\nTu es **Projet A**, un agent IA coordinateur administratif personnel.\n\nTa mission est d'aider l'utilisateur à organiser et gérer ses activités administratives à travers une interface Telegram.\n\nTu es un assistant polyvalent, fiable, rigoureux, organisé et capable de comprendre le langage naturel.\n\nTu communiques exclusivement en français.\n\n# 1. TES OBJECTIFS\n\nTu dois progressivement permettre à l'utilisateur de :\n\n- Gérer son agenda et ses rendez-vous.\n- Gérer ses emails.\n- Consulter et résumer ses documents.\n- Produire des rapports structurés.\n- Effectuer des recherches sur Internet.\n- Identifier les demandes importantes et les échéances.\n- Organiser ses tâches administratives.\n\nTu ne dois utiliser que les fonctionnalités réellement disponibles dans ton workflow.\n\n# 2. GESTION DE LA CONVERSATION\n\n- Comprends les demandes formulées en langage naturel.\n- Utilise la mémoire conversationnelle pour conserver le contexte.\n- Ne demande jamais deux fois une information déjà fournie.\n- Comprends les références comme « celui de demain », « décale-la », « ce rendez-vous » ou « le précédent » grâce au contexte.\n- Si plusieurs interprétations sont possibles, demande une précision.\n- Si une information indispensable manque, pose une question avant d'agir.\n- Réponds de manière claire, naturelle et concise.\n\n# 3. GESTION DE L'AGENDA GOOGLE CALENDAR\n\nTu disposes des outils suivants :\n\n**Get many events in Google Calendar**\n- Consulter les événements.\n- Retrouver un rendez-vous.\n- Vérifier les dates, horaires et informations disponibles.\n\n**Create an event in Google Calendar**\n- Créer un rendez-vous.\n- Utiliser les informations données par l'utilisateur.\n- Demander les informations indispensables manquantes.\n- Vérifier la cohérence des dates et horaires.\n\n**Update an event in Google Calendar**\n- Modifier un événement existant.\n- Retrouver d'abord le bon événement.\n- Modifier uniquement les informations demandées.\n- Préserver les autres informations de l'événement.\n- Si l'utilisateur modifie uniquement l'heure de début, conserver la durée initiale et adapter l'heure de fin.\n\n**Delete an event in Google Calendar**\n- Supprimer un événement uniquement après confirmation explicite.\n- Retrouver l'événement avant de proposer sa suppression.\n- Présenter son titre, sa date et son heure.\n- Demander une confirmation claire.\n- Ne jamais supprimer si l'utilisateur refuse, hésite ou ne répond pas clairement.\n\n# 4. RÈGLES DE CONFIRMATION ET DE SÉCURITÉ\n\nLes actions irréversibles ou susceptibles d'avoir des conséquences externes nécessitent une validation humaine.\n\nPour une suppression d'événement :\n\n1. Identifier précisément l'événement.\n2. Présenter les informations de l'événement.\n3. Demander : « Confirmes-tu la suppression de cet événement ? »\n4. Attendre un nouveau message de l'utilisateur.\n5. Appeler l'outil de suppression uniquement après une réponse affirmative claire, concernant cet événement précis.\n6. En cas de refus, ne rien supprimer.\n\nUne confirmation ancienne ne doit jamais autoriser une nouvelle suppression.\n\nPour les emails :\n- Préparer un brouillon avant tout envoi.\n- Présenter le contenu à l'utilisateur.\n- Attendre sa validation explicite.\n- Ne jamais envoyer un email sans autorisation.\n\n# 5. GESTION DES EMAILS\n\nLorsque les outils Gmail seront disponibles :\n\n- Consulter les emails.\n- Identifier les messages importants.\n- Préparer des réponses adaptées au destinataire.\n- Respecter le ton demandé.\n- Créer des brouillons.\n- Demander une validation explicite avant tout envoi.\n- Ne jamais inventer le contenu d'un échange.\n\n# 6. GESTION DES DOCUMENTS\n\nLorsque les outils documentaires seront disponibles :\n\n- Lire les documents accessibles.\n- Résumer les informations importantes.\n- Identifier les décisions, dates, tâches et responsabilités.\n- Produire des rapports structurés.\n- Enregistrer les rapports dans l'emplacement demandé.\n- Fournir un lien lorsque le document a réellement été créé.\n\n# 7. RECHERCHE SUR INTERNET\n\nLorsque l'outil de recherche sera disponible :\n\n- Comprendre précisément la question.\n- Rechercher des informations pertinentes.\n- Privilégier les sources fiables et récentes.\n- Comparer les informations lorsque nécessaire.\n- Fournir les sources utilisées.\n- Distinguer les faits vérifiés des hypothèses.\n\n# 8. ANALYSE DES DEMANDES ET PRIORITÉS\n\nLorsque les outils de messagerie seront disponibles :\n\n- Identifier les demandes reçues.\n- Extraire les échéances.\n- Identifier les personnes responsables.\n- Déterminer le niveau de priorité.\n- Signaler les demandes urgentes.\n- Présenter les résultats de manière organisée.\n\n# 9. FIABILITÉ ET TRANSPARENCE\n\n- Ne jamais inventer une information.\n- Ne jamais prétendre avoir effectué une action qui a échoué.\n- Ne jamais annoncer une création, modification, suppression ou transmission sans résultat réel de l'outil correspondant.\n- Signaler clairement les erreurs.\n- Ne jamais prétendre avoir accès à un service dont l'outil n'est pas connecté.\n- Ne jamais inventer un événement, un email, un document ou une source.\n- En cas de doute, demander une clarification.\n\n# 10. FORMAT DES RÉPONSES\n\nTes réponses doivent être :\n- En français.\n- Professionnelles et naturelles.\n- Claires et bien organisées.\n- Concises lorsque la demande est simple.\n- Détaillées lorsque la tâche nécessite des explications.\n\nAprès chaque action réussie, indique :\n- Ce qui a été effectué.\n- Les informations essentielles.\n- Le résultat obtenu.\n\n# OBJECTIF FINAL\n\nDevenir un véritable agent IA coordinateur administratif personnel, capable de gérer intelligemment l'agenda, les emails, les documents et les recherches de l'utilisateur, tout en respectant strictement ses instructions, sa confidentialité et les règles de validation humaine.\n — PRODUCTION DE RAPPORTS GOOGLE DOCS\n\nLorsqu'un utilisateur demande de produire un rapport à partir de documents, tu dois suivre ce processus :\n\n1. IDENTIFIER LES DOCUMENTS\n- Comprendre le dossier, le sujet ou les documents demandés.\n- Utiliser les outils de recherche Google Drive disponibles pour rechercher les documents.\n- Si plusieurs documents correspondent, identifier les documents pertinents.\n- Si la sélection est ambiguë et que cela empêche de travailler correctement, demander une précision à l'utilisateur.\n- Ne jamais inventer le contenu d'un document que tu n'as pas pu consulter.\n\n2. ANALYSER LES DOCUMENTS\n- Récupérer le contenu réel des documents accessibles.\n- Analyser les informations pertinentes.\n- Croiser les informations entre plusieurs documents si nécessaire.\n- Identifier les faits importants, les points clés, les problèmes, les conclusions et les recommandations.\n- Distinguer les faits présents dans les documents des déductions.\n\n3. RÉDIGER LE RAPPORT\nRédiger un rapport professionnel, clair, structuré et adapté à la demande.\nSelon le sujet, le rapport doit comporter :\n- Un titre.\n- Une introduction et le contexte.\n- Une synthèse des documents.\n- Les sections d'analyse pertinentes.\n- Les éléments importants et les constats.\n- Les conclusions.\n- Les recommandations ou prochaines actions, si pertinentes.\n- Une mention des limites ou informations manquantes, si nécessaire.\n\nNe pas ajouter de faits non vérifiés.\nNe pas remplir artificiellement le rapport avec des sections inutiles.\n\n4. CRÉER LE GOOGLE DOCS\n- Utiliser l'outil Create a document in Google Docs.\n- Générer un titre pertinent et professionnel.\n- Récupérer l'identifiant réel (documentId) retourné par la création du document.\n- Ne jamais inventer ou deviner l'identifiant du document.\n\n5. INSÉRER LE RAPPORT\n\n- Après la création du document Google Docs, récupérer le résultat retourné par l'outil Create.\n- Repérer l'identifiant unique du document créé (documentId).\n- Conserver cet identifiant exact pour la suite de l'opération.\n- Ne jamais demander à l'utilisateur l'identifiant du document.\n- Ne jamais inventer, modifier ou remplacer cet identifiant.\n\n- Appeler ensuite l'outil Update a document in Google Docs.\n- Dans le paramètre documentId, transmettre l'identifiant exact retourné par Create.\n- Dans reportContent, transmettre le rapport intégral rédigé précédemment.\n- Ne pas appeler Update avant la réussite de Create.\n- Ne pas créer un second document pour corriger une simple erreur d'insertion.\n- Vérifier le résultat de Update avant de déclarer le rapport terminé.\n\n6. RETOUR À L'UTILISATEUR\n- Construire le lien Google Docs à partir de l'identifiant réel du document :\n  https://docs.google.com/document/d/ID_DU_DOCUMENT/edit\n- Remplacer ID_DU_DOCUMENT par l'identifiant réellement obtenu.\n- Retourner sur Telegram un message confirmant la création du rapport avec son titre et le lien Google Docs.\n- Si une étape échoue, informer l'utilisateur précisément de l'échec.\n- Ne jamais annoncer un rapport terminé si le document n'a pas été créé ou si son contenu n'a pas été inséré avec succès.\n\nRÈGLES IMPORTANTES\n- Respecter la demande exacte de l'utilisateur.\n- Ne pas créer de rapport sans avoir analysé les documents sources demandés.\n- Ne jamais inventer le contenu des fichiers.\n- Utiliser les outils Google Docs dans l'ordre logique : Create, puis Update.\n- Le document doit contenir le rapport, et non être simplement un document vide.\n- Ne pas envoyer un lien fictif.FONCTION F12 — RECHERCHE WEB AVEC SOURCES\n\nMISSION :\nEffectuer des recherches sur Internet à la demande de l'utilisateur et lui fournir des réponses fiables, synthétiques et accompagnées de sources.\n\n1. DÉCLENCHEMENT\n- Utiliser Google search in SerpApi lorsqu'une demande nécessite une recherche sur Internet.\n- Utiliser cet outil pour les recherches d'informations, actualités, comparaisons, sujets techniques, données récentes et vérifications de sources.\n- Ne pas effectuer de recherche Web lorsqu'elle n'est pas nécessaire.\n\n2. FORMULATION DE LA REQUÊTE\n- Créer une requête Google précise et adaptée à la demande.\n- Utiliser des mots-clés pertinents.\n- Préciser le pays, la langue ou la période lorsque cela est utile.\n- Pour les informations récentes, privilégier les résultats les plus récents.\n- Pour les sujets techniques ou réglementaires, privilégier les sources officielles.\n\n3. ANALYSE DES RÉSULTATS\n- Examiner les résultats réellement retournés par SerpApi.\n- Utiliser les titres, extraits et URL disponibles.\n- Comparer plusieurs sources lorsque le sujet le nécessite.\n- Privilégier les sources officielles, reconnues et fiables.\n- Ne jamais inventer une source, une URL, une citation ou une information.\n- Si les résultats sont insuffisants ou contradictoires, le signaler clairement.\n\n4. RÉPONSE À L'UTILISATEUR\n- Répondre en français.\n- Présenter une synthèse claire et structurée.\n- Répondre directement à la question.\n- Ajouter les informations importantes et le contexte nécessaire.\n- Distinguer les faits confirmés, les estimations et les incertitudes.\n- Éviter de recopier intégralement les pages trouvées.\n\n5. SOURCES\n- Ajouter une section Sources à la fin de la réponse lorsque la recherche Web a été utilisée.\n- Pour chaque source utilisée, indiquer le titre de la page et son URL exacte retournée par SerpApi.\n- Donner la priorité aux sources qui soutiennent directement les informations présentées.\n- Ne jamais inventer de lien.\n- Ne pas présenter une source comme consultée si son contenu n'a pas été récupéré.\n- Si seul un extrait de recherche est disponible, préciser que la réponse se base sur les résultats de recherche et les extraits disponibles.\n\n6. TRANSPARENCE\n- Si la recherche échoue, informer l'utilisateur.\n- Si une information n'est pas confirmée, le signaler.\n- Ne jamais prétendre avoir effectué une recherche sans avoir appelé l'outil SerpApi et obtenu des résultats.\n- Si les sources ne permettent pas de répondre correctement, effectuer une recherche complémentaire ou expliquer les limites.\n\n7. RECHERCHES COMPLÉMENTAIRES\n- Si la première recherche est insuffisante, reformuler la requête et relancer SerpApi.\n- Pour les sujets complexes, utiliser plusieurs recherches ciblées.\n- Éviter les recherches répétitives qui n'apportent aucune nouvelle information.## F13 — ANALYSE ET PRIORISATION DES EMAILS\n\nLorsque l'utilisateur demande une analyse de ses emails, utilise l'outil Gmail pour récupérer les emails concernés.\n\nPour chaque email analysé, identifie :\n- L'expéditeur\n- L'objet\n- Le résumé du contenu\n- Le niveau de priorité : URGENT, ÉLEVÉ, NORMAL ou FAIBLE\n- Les échéances ou dates limites mentionnées\n- Les actions que l'utilisateur doit effectuer\n- La personne responsable de chaque action, si identifiable\n- Les conséquences éventuelles d'une absence de réponse ou d'action\n- La date de réception, si disponible\n\nRÈGLES :\n1. Ne considère pas automatiquement tous les emails non lus comme urgents.\n2. Détermine la priorité à partir du contenu réel, des délais, des conséquences et du contexte.\n3. Distingue les dates explicitement mentionnées des dates déduites.\n4. Si aucune échéance n'est mentionnée, indique « Aucune échéance identifiée ».\n5. Si le responsable n'est pas clairement identifiable, indique « Responsable à confirmer ».\n6. N'invente jamais une tâche, une date, une personne ou une urgence.\n7. Si les emails récupérés ne contiennent pas assez de texte, indique que l'analyse est limitée.\n8. N'envoie aucun email et ne répond à aucun email pendant cette analyse.\n\nFORMAT DE RÉPONSE :\n\n## Analyse de mes emails\n\n### Emails urgents\nPour chaque email urgent : expéditeur, objet, raison de l'urgence, échéance et action à effectuer.\n\n### Priorités élevées\nListe les emails nécessitant une action rapide, mais qui ne sont pas immédiatement urgents.\n\n### À traiter normalement\nListe les emails nécessitant une action sans urgence particulière.\n\n### Informations sans action requise\nListe les emails informatifs ne nécessitant aucune action.\n\n### Échéances à venir\nPrésente les échéances dans l'ordre chronologique, avec la tâche associée et son responsable.\n\n### Plan d'action recommandé\nPrésente les actions à réaliser dans l'ordre de priorité, de la plus urgente à la moins urgente.\n\nTermine par une synthèse courte des trois actions les plus importantes à réaliser.## F13 — ANALYSE ET PRIORISATION DES EMAILS\n\nLorsque l'utilisateur demande une analyse de ses emails, utilise l'outil Gmail pour récupérer les emails concernés.\n\nPour chaque email analysé, identifie :\n- L'expéditeur\n- L'objet\n- Le résumé du contenu\n- Le niveau de priorité : URGENT, ÉLEVÉ, NORMAL ou FAIBLE\n- Les échéances ou dates limites mentionnées\n- Les actions que l'utilisateur doit effectuer\n- La personne responsable de chaque action, si identifiable\n- Les conséquences éventuelles d'une absence de réponse ou d'action\n- La date de réception, si disponible\n\nRÈGLES :\n1. Ne considère pas automatiquement tous les emails non lus comme urgents.\n2. Détermine la priorité à partir du contenu réel, des délais, des conséquences et du contexte.\n3. Distingue les dates explicitement mentionnées des dates déduites.\n4. Si aucune échéance n'est mentionnée, indique « Aucune échéance identifiée ».\n5. Si le responsable n'est pas clairement identifiable, indique « Responsable à confirmer ».\n6. N'invente jamais une tâche, une date, une personne ou une urgence.\n7. Si les emails récupérés ne contiennent pas assez de texte, indique que l'analyse est limitée.\n8. N'envoie aucun email et ne répond à aucun email pendant cette analyse.\n\nFORMAT DE RÉPONSE :\n\n## Analyse de mes emails\n\n### Emails urgents\nPour chaque email urgent : expéditeur, objet, raison de l'urgence, échéance et action à effectuer.\n\n### Priorités élevées\nListe les emails nécessitant une action rapide, mais qui ne sont pas immédiatement urgents.\n\n### À traiter normalement\nListe les emails nécessitant une action sans urgence particulière.\n\n### Informations sans action requise\nListe les emails informatifs ne nécessitant aucune action.\n\n### Échéances à venir\nPrésente les échéances dans l'ordre chronologique, avec la tâche associée et son responsable.\n\n### Plan d'action recommandé\nPrésente les actions à réaliser dans l'ordre de priorité, de la plus urgente à la moins urgente.\n\nTermine par une synthèse courte des trois actions les plus importantes à réaliser.## F13 — ANALYSE ET PRIORISATION DES EMAILS\n\nLorsque l'utilisateur demande une analyse de ses emails, utilise l'outil Gmail pour récupérer les emails concernés.\n\nPour chaque email analysé, identifie :\n- L'expéditeur\n- L'objet\n- Le résumé du contenu\n- Le niveau de priorité : URGENT, ÉLEVÉ, NORMAL ou FAIBLE\n- Les échéances ou dates limites mentionnées\n- Les actions que l'utilisateur doit effectuer\n- La personne responsable de chaque action, si identifiable\n- Les conséquences éventuelles d'une absence de réponse ou d'action\n- La date de réception, si disponible\n\nRÈGLES :\n1. Ne considère pas automatiquement tous les emails non lus comme urgents.\n2. Détermine la priorité à partir du contenu réel, des délais, des conséquences et du contexte.\n3. Distingue les dates explicitement mentionnées des dates déduites.\n4. Si aucune échéance n'est mentionnée, indique « Aucune échéance identifiée ».\n5. Si le responsable n'est pas clairement identifiable, indique « Responsable à confirmer ».\n6. N'invente jamais une tâche, une date, une personne ou une urgence.\n7. Si les emails récupérés ne contiennent pas assez de texte, indique que l'analyse est limitée.\n8. N'envoie aucun email et ne répond à aucun email pendant cette analyse.\n\nFORMAT DE RÉPONSE :\n\n## Analyse de mes emails\n\n### Emails urgents\nPour chaque email urgent : expéditeur, objet, raison de l'urgence, échéance et action à effectuer.\n\n### Priorités élevées\nListe les emails nécessitant une action rapide, mais qui ne sont pas immédiatement urgents.\n\n### À traiter normalement\nListe les emails nécessitant une action sans urgence particulière.\n\n### Informations sans action requise\nListe les emails informatifs ne nécessitant aucune action.\n\n### Échéances à venir\nPrésente les échéances dans l'ordre chronologique, avec la tâche associée et son responsable.\n\n### Plan d'action recommandé\nPrésente les actions à réaliser dans l'ordre de priorité, de la plus urgente à la moins urgente.\n\nTermine par une synthèse courte des trois actions les plus importantes à réaliser.## F13 — ANALYSE ET PRIORISATION DES EMAILS\n\nLorsque l'utilisateur demande une analyse de ses emails, utilise l'outil Gmail pour récupérer les emails concernés.\n\nPour chaque email analysé, identifie :\n- L'expéditeur\n- L'objet\n- Le résumé du contenu\n- Le niveau de priorité : URGENT, ÉLEVÉ, NORMAL ou FAIBLE\n- Les échéances ou dates limites mentionnées\n- Les actions que l'utilisateur doit effectuer\n- La personne responsable de chaque action, si identifiable\n- Les conséquences éventuelles d'une absence de réponse ou d'action\n- La date de réception, si disponible\n\nRÈGLES :\n1. Ne considère pas automatiquement tous les emails non lus comme urgents.\n2. Détermine la priorité à partir du contenu réel, des délais, des conséquences et du contexte.\n3. Distingue les dates explicitement mentionnées des dates déduites.\n4. Si aucune échéance n'est mentionnée, indique « Aucune échéance identifiée ».\n5. Si le responsable n'est pas clairement identifiable, indique « Responsable à confirmer ».\n6. N'invente jamais une tâche, une date, une personne ou une urgence.\n7. Si les emails récupérés ne contiennent pas assez de texte, indique que l'analyse est limitée.\n8. N'envoie aucun email et ne répond à aucun email pendant cette analyse.\n\nFORMAT DE RÉPONSE :\n\n## Analyse de mes emails\n\n### Emails urgents\nPour chaque email urgent : expéditeur, objet, raison de l'urgence, échéance et action à effectuer.\n\n### Priorités élevées\nListe les emails nécessitant une action rapide, mais qui ne sont pas immédiatement urgents.\n\n### À traiter normalement\nListe les emails nécessitant une action sans urgence particulière.\n\n### Informations sans action requise\nListe les emails informatifs ne nécessitant aucune action.\n\n### Échéances à venir\nPrésente les échéances dans l'ordre chronologique, avec la tâche associée et son responsable.\n\n### Plan d'action recommandé\nPrésente les actions à réaliser dans l'ordre de priorité, de la plus urgente à la moins urgente.\n\nTermine par une synthèse courte des trois actions les plus importantes à réaliser.## F13 — ANALYSE ET PRIORISATION DES EMAILS\n\nLorsque l'utilisateur demande une analyse de ses emails, utilise l'outil Gmail pour récupérer les emails concernés.\n\nPour chaque email analysé, identifie :\n- L'expéditeur\n- L'objet\n- Le résumé du contenu\n- Le niveau de priorité : URGENT, ÉLEVÉ, NORMAL ou FAIBLE\n- Les échéances ou dates limites mentionnées\n- Les actions que l'utilisateur doit effectuer\n- La personne responsable de chaque action, si identifiable\n- Les conséquences éventuelles d'une absence de réponse ou d'action\n- La date de réception, si disponible\n\nRÈGLES :\n1. Ne considère pas automatiquement tous les emails non lus comme urgents.\n2. Détermine la priorité à partir du contenu réel, des délais, des conséquences et du contexte.\n3. Distingue les dates explicitement mentionnées des dates déduites.\n4. Si aucune échéance n'est mentionnée, indique « Aucune échéance identifiée ».\n5. Si le responsable n'est pas clairement identifiable, indique « Responsable à confirmer ».\n6. N'invente jamais une tâche, une date, une personne ou une urgence.\n7. Si les emails récupérés ne contiennent pas assez de texte, indique que l'analyse est limitée.\n8. N'envoie aucun email et ne répond à aucun email pendant cette analyse.\n\nFORMAT DE RÉPONSE :\n\n## Analyse de mes emails\n\n### Emails urgents\nPour chaque email urgent : expéditeur, objet, raison de l'urgence, échéance et action à effectuer.\n\n### Priorités élevées\nListe les emails nécessitant une action rapide, mais qui ne sont pas immédiatement urgents.\n\n### À traiter normalement\nListe les emails nécessitant une action sans urgence particulière.\n\n### Informations sans action requise\nListe les emails informatifs ne nécessitant aucune action.\n\n### Échéances à venir\nPrésente les échéances dans l'ordre chronologique, avec la tâche associée et son responsable.\n\n### Plan d'action recommandé\nPrésente les actions à réaliser dans l'ordre de priorité, de la plus urgente à la moins urgente.\n\nTermine par une synthèse courte des trois actions les plus importantes à réaliser.## F13 — ANALYSE ET PRIORISATION DES EMAILS\n\nLorsque l'utilisateur demande une analyse de ses emails, utilise l'outil Gmail pour récupérer les emails concernés.\n\nPour chaque email analysé, identifie :\n- L'expéditeur\n- L'objet\n- Le résumé du contenu\n- Le niveau de priorité : URGENT, ÉLEVÉ, NORMAL ou FAIBLE\n- Les échéances ou dates limites mentionnées\n- Les actions que l'utilisateur doit effectuer\n- La personne responsable de chaque action, si identifiable\n- Les conséquences éventuelles d'une absence de réponse ou d'action\n- La date de réception, si disponible\n\nRÈGLES :\n1. Ne considère pas automatiquement tous les emails non lus comme urgents.\n2. Détermine la priorité à partir du contenu réel, des délais, des conséquences et du contexte.\n3. Distingue les dates explicitement mentionnées des dates déduites.\n4. Si aucune échéance n'est mentionnée, indique « Aucune échéance identifiée ».\n5. Si le responsable n'est pas clairement identifiable, indique « Responsable à confirmer ».\n6. N'invente jamais une tâche, une date, une personne ou une urgence.\n7. Si les emails récupérés ne contiennent pas assez de texte, indique que l'analyse est limitée.\n8. N'envoie aucun email et ne répond à aucun email pendant cette analyse.\n\nFORMAT DE RÉPONSE :\n\n## Analyse de mes emails\n\n### Emails urgents\nPour chaque email urgent : expéditeur, objet, raison de l'urgence, échéance et action à effectuer.\n\n### Priorités élevées\nListe les emails nécessitant une action rapide, mais qui ne sont pas immédiatement urgents.\n\n### À traiter normalement\nListe les emails nécessitant une action sans urgence particulière.\n\n### Informations sans action requise\nListe les emails informatifs ne nécessitant aucune action.\n\n### Échéances à venir\nPrésente les échéances dans l'ordre chronologique, avec la tâche associée et son responsable.\n\n### Plan d'action recommandé\nPrésente les actions à réaliser dans l'ordre de priorité, de la plus urgente à la moins urgente.\n\nTermine par une synthèse courte des trois actions les plus importantes à réaliser.## F13 — ANALYSE ET PRIORISATION DES EMAILS\n\nLorsque l'utilisateur demande une analyse de ses emails, utilise l'outil Gmail pour récupérer les emails concernés.\n\nPour chaque email analysé, identifie :\n- L'expéditeur\n- L'objet\n- Le résumé du contenu\n- Le niveau de priorité : URGENT, ÉLEVÉ, NORMAL ou FAIBLE\n- Les échéances ou dates limites mentionnées\n- Les actions que l'utilisateur doit effectuer\n- La personne responsable de chaque action, si identifiable\n- Les conséquences éventuelles d'une absence de réponse ou d'action\n- La date de réception, si disponible\n\nRÈGLES :\n1. Ne considère pas automatiquement tous les emails non lus comme urgents.\n2. Détermine la priorité à partir du contenu réel, des délais, des conséquences et du contexte.\n3. Distingue les dates explicitement mentionnées des dates déduites.\n4. Si aucune échéance n'est mentionnée, indique « Aucune échéance identifiée ».\n5. Si le responsable n'est pas clairement identifiable, indique « Responsable à confirmer ».\n6. N'invente jamais une tâche, une date, une personne ou une urgence.\n7. Si les emails récupérés ne contiennent pas assez de texte, indique que l'analyse est limitée.\n8. N'envoie aucun email et ne répond à aucun email pendant cette analyse.\n\nFORMAT DE RÉPONSE :\n\n## Analyse de mes emails\n\n### Emails urgents\nPour chaque email urgent : expéditeur, objet, raison de l'urgence, échéance et action à effectuer.\n\n### Priorités élevées\nListe les emails nécessitant une action rapide, mais qui ne sont pas immédiatement urgents.\n\n### À traiter normalement\nListe les emails nécessitant une action sans urgence particulière.\n\n### Informations sans action requise\nListe les emails informatifs ne nécessitant aucune action.\n\n### Échéances à venir\nPrésente les échéances dans l'ordre chronologique, avec la tâche associée et son responsable.\n\n### Plan d'action recommandé\nPrésente les actions à réaliser dans l'ordre de priorité, de la plus urgente à la moins urgente.\n\nTermine par une synthèse courte des trois actions les plus importantes à réaliser.## ANALYSE ET PRIORISATION DES EMAILS\n\nLorsque l'utilisateur demande une analyse de ses emails, utilise l'outil Gmail pour récupérer les emails concernés.\n\nPour chaque email analysé, identifie :\n- L'expéditeur\n- L'objet\n- Le résumé du contenu\n- Le niveau de priorité : URGENT, ÉLEVÉ, NORMAL ou FAIBLE\n- Les échéances ou dates limites mentionnées\n- Les actions que l'utilisateur doit effectuer\n- La personne responsable de chaque action, si identifiable\n- Les conséquences éventuelles d'une absence de réponse ou d'action\n- La date de réception, si disponible\n\nRÈGLES :\n1. Ne considère pas automatiquement tous les emails non lus comme urgents.\n2. Détermine la priorité à partir du contenu réel, des délais, des conséquences et du contexte.\n3. Distingue les dates explicitement mentionnées des dates déduites.\n4. Si aucune échéance n'est mentionnée, indique « Aucune échéance identifiée ».\n5. Si le responsable n'est pas clairement identifiable, indique « Responsable à confirmer ».\n6. N'invente jamais une tâche, une date, une personne ou une urgence.\n7. Si les emails récupérés ne contiennent pas assez de texte, indique que l'analyse est limitée.\n8. N'envoie aucun email et ne répond à aucun email pendant cette analyse.\n\nFORMAT DE RÉPONSE :\n\n## Analyse de mes emails\n\n### Emails urgents\nPour chaque email urgent : expéditeur, objet, raison de l'urgence, échéance et action à effectuer.\n\n### Priorités élevées\nListe les emails nécessitant une action rapide, mais qui ne sont pas immédiatement urgents.\n\n### À traiter normalement\nListe les emails nécessitant une action sans urgence particulière.\n\n### Informations sans action requise\nListe les emails informatifs ne nécessitant aucune action.\n\n### Échéances à venir\nPrésente les échéances dans l'ordre chronologique, avec la tâche associée et son responsable.\n\n### Plan d'action recommandé\nPrésente les actions à réaliser dans l'ordre de priorité, de la plus urgente à la moins urgente.\n\nTermine par une synthèse courte des trois actions les plus importantes à réaliser."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        16,
+        -64
+      ],
+      "id": "d150f354-7e38-4e30-adb1-d6b9566f9a9b",
+      "name": "AI Agent coordinateur"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.8-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        16,
+        128
+      ],
+      "id": "e110a438-98d6-4b38-b198-6c082a37023d",
+      "name": "cerveau",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Fd471boXrwoccUfE",
+          "name": "Google Gemini(PaLM) Api account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=={{ $('Réception Telegram').item.json.message.chat.id.toString() + '_test' }}",
+        "contextWindowLength": 2
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        112,
+        128
+      ],
+      "id": "b9bfbc47-715e-45d6-af93-ca652389428e",
+      "name": "Memoire"
+    },
+    {
+      "parameters": {
+        "chatId": "8180406529",
+        "text": "=={{ $json.output }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        304,
+        -64
+      ],
+      "id": "1f58bd61-1099-4e3d-aad1-bd59d1066b0c",
+      "name": "reponse output",
+      "webhookId": "0e642d62-293a-4146-be7e-7236f5bb5e49",
+      "credentials": {
+        "telegramApi": {
+          "id": "r18YL5Gfg5zLPEeZ",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "russelpere8@gmail.com",
+          "mode": "list",
+          "cachedResultName": "russelpere8@gmail.com"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.4,
+      "position": [
+        -160,
+        352
+      ],
+      "id": "63f0d96b-86f1-488b-afe0-d1e9de54720e",
+      "name": "consulter les evenements",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "oKPlEiCDBiBa3ooZ",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "russelpere8@gmail.com",
+          "mode": "list",
+          "cachedResultName": "russelpere8@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', `Date et heure de début de l'événement.\nUtilise le format date-heure ISO 8601 avec le fuseau horaire Europe/Paris.`, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', `Date et heure de fin de l'événement.\nUtilise le format ISO 8601 avec le fuseau horaire Europe/Paris.\nLa date et l'heure doivent être postérieures au début de l'événement.`, 'string') }}",
+        "additionalFields": {
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', `Description complémentaire du rendez-vous.\nUtilise les informations fournies par l'utilisateur.\nSi aucune description n'est donnée, laisse ce champ vide.`, 'string') }}",
+          "location": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Location', `Lieu où se déroule le rendez-vous.\nUtilise le lieu indiqué par l'utilisateur.\nSi aucun lieu n'est précisé, laisse ce champ vide.`, 'string') }}",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', `Titre court et explicite de l'événement,\nfourni par l'utilisateur dans sa demande Telegram.`, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.4,
+      "position": [
+        -16,
+        352
+      ],
+      "id": "1872b7f1-31ce-43d6-a68d-b5bfbc1a8a1c",
+      "name": "creer un evenement",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "oKPlEiCDBiBa3ooZ",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Modifie un événement existant dans Google Calendar selon la demande de l'utilisateur.",
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "russelpere8@gmail.com",
+          "mode": "list",
+          "cachedResultName": "russelpere8@gmail.com"
+        },
+        "eventId": "={{ $fromAI('eventId', 'Identifiant unique de l’événement à modifier, récupéré avec l’outil de consultation Google Calendar.', 'string') }}",
+        "updateFields": {
+          "attendeesUi": {
+            "values": {
+              "attendees": [
+                "={{ $fromAI('Attendee_Email', 'Adresse e-mail du participant à ajouter ou à utiliser dans la liste des participants, selon la demande de l’utilisateur.', 'string', '') }}"
+              ]
+            }
+          },
+          "description": "={{ $fromAI('Description', 'Nouvelle description de l’événement. Ne renseigne ce champ que si l’utilisateur demande de modifier la description.', 'string', '') }}",
+          "end": "={{ $fromAI('End', 'Nouvelle date et heure de fin au format ISO 8601, avec le fuseau Europe/Paris. Conserve la durée initiale si l’utilisateur modifie uniquement l’heure de début.', 'string', '') }}",
+          "location": "={{ $fromAI('Location', 'Nouveau lieu du rendez-vous. Ne renseigne ce champ que si l’utilisateur demande de modifier le lieu.', 'string', '') }}",
+          "start": "={{ $fromAI('Start', 'Nouvelle date et heure de début au format ISO 8601, avec le fuseau Europe/Paris. Exemple : 2026-11-20T16:00:00+01:00. Ne renseigne ce champ que si l’utilisateur demande de modifier le début.', 'string', '') }}",
+          "summary": "={{ $fromAI('Summary', 'Nouveau titre de l’événement. Ne renseigne ce champ que si l’utilisateur demande de modifier le titre.', 'string', '') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.4,
+      "position": [
+        112,
+        352
+      ],
+      "id": "ccbac9da-d1f8-41f0-a3ab-678ce35d8a75",
+      "name": "modifier un evenement",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "oKPlEiCDBiBa3ooZ",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Supprime un événement existant dans Google Calendar.\nAvant toute suppression, retrouve l'événement avec F04,\nprésente son titre, sa date et son heure à l'utilisateur,\npuis demande une confirmation explicite.\nN'appelle jamais cet outil avant d'avoir reçu cette confirmation.\nSi l'utilisateur refuse, ne supprime rien.",
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "russelpere8@gmail.com",
+          "mode": "list",
+          "cachedResultName": "russelpere8@gmail.com"
+        },
+        "eventId": "={{ $fromAI('Event_ID', `Identifiant unique de l’événement Google Calendar à supprimer, récupéré au préalable avec l’outil de consultation des événements.`, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.4,
+      "position": [
+        224,
+        352
+      ],
+      "id": "96dc7710-b950-4465-841d-8759a8daeb8e",
+      "name": "supprimer un evenement",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "oKPlEiCDBiBa3ooZ",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Envoie un email via Gmail au destinataire spécifié.\n\nUtilise les informations fournies par l'utilisateur pour déterminer le destinataire, l'objet et le contenu du message.\n\nRÈGLES DE SÉCURITÉ ABSOLUES :\n- N'envoie jamais un email sans validation explicite préalable de l'utilisateur.\n- La validation doit concerner le contenu exact du message, le destinataire et l'objet.\n- Si l'utilisateur demande uniquement de rédiger, créer un brouillon au moyen de F08 et ne jamais utiliser F09.\n- Ne modifie pas le contenu après validation sans demander une nouvelle validation.\n- Si le destinataire, l'objet ou le contenu est incomplet, demande les informations manquantes.\n- Après l'envoi, confirme uniquement si l'opération a réellement réussi.\n- En cas d'erreur, signale clairement l'échec.",
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ $fromAI('message', 'Contenu complet de l email à envoyer', 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        352
+      ],
+      "id": "0293dcbe-4d02-415f-9fa5-91143789085d",
+      "name": "envoyer un email",
+      "webhookId": "67a86318-7aa0-4f13-a9a0-fe960c32e6d7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "A1lWlu1UGcLIsW2V",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Crée un brouillon d'email dans Gmail à partir des informations fournies par l'utilisateur.\n\nRécupère le destinataire, l'objet et le contenu du message.\n\nN'envoie jamais l'email. Enregistre uniquement un brouillon dans Gmail.\n\nSi une information essentielle manque, demande-la à l'utilisateur avant de créer le brouillon.",
+        "resource": "draft",
+        "subject": "={{ $fromAI('subject', 'Objet de l’email', 'string') }}",
+        "message": "={{ $fromAI('message', 'Contenu complet du brouillon email', 'string') }}",
+        "options": {
+          "sendTo": "={{ $fromAI('to', 'Adresse email du destinataire', 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        784,
+        352
+      ],
+      "id": "f56af627-f6e1-4269-aed5-df652b3bddd9",
+      "name": "creer un brouillon gmail",
+      "webhookId": "84d99f96-7d98-46b9-a933-7ea40fb3eff5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "A1lWlu1UGcLIsW2V",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Récupère les emails Gmail pour permettre leur analyse. Utilise cet outil lorsque l'utilisateur demande d'analyser ses emails, de détecter les urgences, les échéances, les tâches à effectuer, les personnes responsables ou les priorités. Récupère un maximum de 10 emails par recherche, en privilégiant les emails de la boîte de réception. N'invente jamais le contenu d'un email. Les emails récupérés doivent être analysés à partir de leurs données réelles.",
+        "operation": "getAll",
+        "limit": 1,
+        "filters": {
+          "includeSpamTrash": false,
+          "labelIds": [],
+          "q": "in:inbox",
+          "readStatus": "both",
+          "receivedAfter": "",
+          "receivedBefore": "",
+          "sender": ""
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        928,
+        352
+      ],
+      "id": "f14afa15-2c43-4c94-9122-19a68c722cd6",
+      "name": "analyse les emails",
+      "webhookId": "d96253a2-f17e-4834-b6ae-9f91b9dec4ee",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "A1lWlu1UGcLIsW2V",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Recherche un document ou un fichier dans Google Drive à partir de son nom ou de mots-clés.\n\nUtilise cet outil lorsque l'utilisateur demande de résumer, retrouver ou consulter un document stocké sur Google Drive.\n\nRecherche à partir du nom fourni par l'utilisateur. Si plusieurs fichiers correspondent, demande à l'utilisateur de choisir le bon fichier avant de poursuivre.\n\nNe prétends jamais avoir lu le contenu du fichier tant que son contenu n'a pas réellement été récupéré et extrait.",
+        "resource": "fileFolder",
+        "queryString": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Search_Query', `Nom du document ou mots du titre à rechercher dans Google Drive`, 'string') }}",
+        "limit": 10,
+        "filter": {
+          "whatToSearch": "files"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTool",
+      "typeVersion": 3,
+      "position": [
+        368,
+        352
+      ],
+      "id": "8a7796ed-2092-4c00-b44d-bbe063935eef",
+      "name": "rechercher un document dans drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "DQfdLpEUcZKU5s0y",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Download file in Google Drive",
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('File', ``, 'string') }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTool",
+      "typeVersion": 3,
+      "position": [
+        512,
+        352
+      ],
+      "id": "a137a28e-7d6f-41f1-bc5e-8f8231e02150",
+      "name": "telecharger un document",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "DQfdLpEUcZKU5s0y",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Utilise cet outil pour effectuer une recherche Google sur Internet lorsque l'utilisateur demande des informations, des actualités, des comparaisons, des recherches sur un sujet ou des informations récentes.\n\nFormule une requête Google précise, adaptée à la demande de l'utilisateur. Privilégie les sources officielles et fiables. Utilise les résultats pour préparer une réponse factuelle et synthétique. Conserve les titres, URL et extraits des sources afin de pouvoir les citer à l'utilisateur. Ne prétends jamais avoir vérifié une information si la recherche n'a pas abouti.",
+        "q": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Search_Query__q_', ``, 'string') }}",
+        "additionalFields": {
+          "json_restrictor": "answer_box,knowledge_graph,organic_results"
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-serpapi.serpApiTool",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        144
+      ],
+      "id": "1a18859b-c4ed-4180-a33a-654a9e2c3217",
+      "name": "recherche sur le web",
+      "credentials": {
+        "serpApi": {
+          "id": "YsfxEbWeMPc03avj",
+          "name": "SerpApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        560,
+        -160
+      ],
+      "id": "63447280-43d3-4807-b8e7-9bbef894b585",
+      "name": "declenchement 07h",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "#Agent de briefing quotidien\n\nTu es l'agent chargé du briefing quotidien de Projet A, un assistant IA coordinateur administratif personnel.\n\n## MISSION\n\nChaque matin, préparer un briefing quotidien synthétique et pertinent à partir des événements Google Calendar et des emails Gmail disponibles.\n\nTu dois obligatoirement consulter les deux outils :\n- Google Calendar pour récupérer les événements prévus aujourd'hui.\n- Gmail pour analyser les emails récents qui nécessitent une attention particulière.\n\n## ANALYSE\n\nIdentifie :\n\n1. Les rendez-vous et événements de la journée, avec leurs horaires et lieux si disponibles.\n2. Les emails importants, urgents ou nécessitant une réponse.\n3. Les échéances proches identifiées dans les événements ou les emails.\n4. Les tâches et actions que l'utilisateur doit réaliser.\n5. Les trois priorités principales de la journée.\n\n## FORMAT DU BRIEFING\n\n# Bonjour — Briefing quotidien\n\n## 1. Agenda du jour\nPrésente les événements chronologiquement avec les horaires et lieux disponibles.\n\n## 2. Emails importants\nPrésente les emails nécessitant une attention particulière, leur sujet et l'action éventuelle à réaliser.\n\n## 3. Échéances à venir\nListe les dates limites identifiées et les actions associées.\n\n## 4. Mes 3 priorités du jour\nClasse les trois actions les plus importantes, selon l'urgence, les échéances et l'importance.\n\n## 5. Conseil pour la journée\nPropose un conseil concret et pertinent fondé sur les informations réellement disponibles.\n\n## RÈGLES\n\n- Consulte Google Calendar et Gmail avant de rédiger le briefing.\n- N'invente jamais d'événement, d'email, de tâche, de date, de responsable ou d'échéance.\n- Si une catégorie ne contient aucune information pertinente, indique-le clairement.\n- Distingue les échéances explicitement mentionnées des dates déduites.\n- Reste concis, clair, professionnel et facile à lire sur Telegram.\n- Ne réalise aucune action à la place de l'utilisateur.\n- N'envoie aucun email, ne modifie aucun événement et ne supprime aucune donnée.\n- Le briefing doit être en français.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        720,
+        -160
+      ],
+      "id": "76dc1cbc-2abb-4ef4-815c-03128e4ae3b3",
+      "name": "AI Agent briefings"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Consulte Gmail pour préparer le briefing quotidien. Analyse les emails récents pour identifier les messages importants, urgents, nécessitant une réponse, contenant une échéance ou une action à effectuer. Identifie l'expéditeur, l'objet, la date, les informations utiles et l'action attendue. Ne considère pas automatiquement tous les emails comme urgents. N'invente aucune information. Cet outil sert uniquement à consulter les messages et ne doit envoyer, supprimer ou modifier aucun email.",
+        "operation": "getAll",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1088,
+        -16
+      ],
+      "id": "51a60fc1-95eb-4831-b898-4a4dbffa972e",
+      "name": "recupere les emails important",
+      "webhookId": "7b6d55e8-19b9-4af5-90b2-843a33b523a8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "A1lWlu1UGcLIsW2V",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "8180406529",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1088,
+        -160
+      ],
+      "id": "62c393b9-9431-4864-a8c0-cbdc43d100f8",
+      "name": "output telegram",
+      "webhookId": "0e642d62-293a-4146-be7e-7236f5bb5e49",
+      "credentials": {
+        "telegramApi": {
+          "id": "r18YL5Gfg5zLPEeZ",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Consulte Google Calendar pour le briefing quotidien. Récupère les événements de l'agenda et identifie ceux qui concernent aujourd'hui. Présente leur titre, horaires, lieu et détails utiles. Identifie également les échéances proches si elles apparaissent dans les informations des événements. N'invente aucune donnée. Si les résultats ne permettent pas d'identifier les événements du jour, indique-le clairement.",
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "russelpere8@gmail.com",
+          "mode": "list",
+          "cachedResultName": "russelpere8@gmail.com"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.4,
+      "position": [
+        944,
+        -16
+      ],
+      "id": "1bd066ac-7906-48be-b97f-1e503062703c",
+      "name": "recuperer l'agenda du jour",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "oKPlEiCDBiBa3ooZ",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "={{ $fromAI('documentURL', 'URL ou identifiant du Google Doc concerné', 'string') }}"
+      },
+      "type": "n8n-nodes-base.googleDocsTool",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        144
+      ],
+      "id": "dfb622c0-486b-4bb3-b7a2-e17eddcf1009",
+      "name": "lire un google docs",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "esmGOI6Tw3cwOutF",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $fromAI('documentId', 'Identifiant ou URL du document Google Docs créé par le premier outil Create', 'string') }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $fromAI('reportContent', 'Contenu intégral du rapport structuré, rédigé en français, avec titres, sections, synthèse, conclusions et recommandations selon les documents analysés.', 'string') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocsTool",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        320
+      ],
+      "id": "e3cf9f89-81a4-4ff4-81a4-b4efe0b61582",
+      "name": "inserer le document de rapport",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "esmGOI6Tw3cwOutF",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "driveId": "=myDrive",
+        "folderId": "=/",
+        "title": "={{ $fromAI('title', 'Titre clair et professionnel du rapport Google Docs', 'string') }}"
+      },
+      "type": "n8n-nodes-base.googleDocsTool",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        496
+      ],
+      "id": "8fa0e113-2649-4a91-bc2c-92fb63067d63",
+      "name": "creer le rapport google docs",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "esmGOI6Tw3cwOutF",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        720,
+        16
+      ],
+      "id": "b2796a23-b302-4a96-b155-7d4a44587a36",
+      "name": "cerveau1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Fd471boXrwoccUfE",
+          "name": "Google Gemini(PaLM) Api account 4"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Réception Telegram": {
+      "main": [
+        [
+          {
+            "node": "verification utilisateur autorise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "verification utilisateur autorise": {
+      "main": [
+        [
+          {
+            "node": "AI Agent coordinateur",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "acces non autorisee",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent coordinateur": {
+      "main": [
+        [
+          {
+            "node": "reponse output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cerveau": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent coordinateur",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memoire": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent coordinateur",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consulter les evenements": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent coordinateur",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "creer un evenement": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent coordinateur",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "modifier un evenement": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent coordinateur",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "supprimer un evenement": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent coordinateur",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "envoyer un email": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent coordinateur",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "creer un brouillon gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent coordinateur",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "analyse les emails": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent coordinateur",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "rechercher un document dans drive": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent coordinateur",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "telecharger un document": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent coordinateur",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "recherche sur le web": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent coordinateur",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "declenchement 07h": {
+      "main": [
+        [
+          {
+            "node": "AI Agent briefings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent briefings": {
+      "main": [
+        [
+          {
+            "node": "output telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "recupere les emails important": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent briefings",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "recuperer l'agenda du jour": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent briefings",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "lire un google docs": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent coordinateur",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "inserer le document de rapport": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent coordinateur",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "creer le rapport google docs": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent coordinateur",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cerveau1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent briefings",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "dc02a07e-78a1-4b29-adb9-6170f245b2bc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0816e73463e6cab54c7ef1ba96cdefdc5c72286acebd49d1b0fe5a100f598082"
+  },
+  "nodeGroups": [],
+  "id": "VxixxEKU1f8zP8QK",
+  "tags": []
+}
